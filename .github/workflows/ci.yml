@@ -15,6 +15,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
