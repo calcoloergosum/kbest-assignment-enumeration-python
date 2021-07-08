@@ -3,9 +3,6 @@ use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArray2};
 use pyo3::prelude::*;
 use pyo3::PyIterProtocol;
 
-use kbest_lap;
-use ndarray;
-
 type Matrix = ndarray::Array2<f64>;
 
 #[pyclass]
@@ -16,7 +13,6 @@ struct State {
     #[pyo3(get)]
     a_solution: Vec<usize>,
 }
-
 
 impl From<kbest_lap::State<f64>> for State {
     fn from(inner: kbest_lap::State<f64>) -> Self {
