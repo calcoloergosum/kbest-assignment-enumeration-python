@@ -34,17 +34,29 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          lfs: true
-      - uses: actions/cache@v1
+          submodules: true
+      - name: Cache pip
+        uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - name: cache rust related
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
       - name: Install dependencies
         run: |
           pip3 install -r requirements.txt
