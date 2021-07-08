@@ -78,12 +78,12 @@ jobs:
         run: |
           pip3 install -r requirements.txt -r requirements.ci.txt
           python3 -m pip install --upgrade pip
-          pip3 install .
+          pip3 install -e .
           pip3 check
 
       - name: Static tests
         run: |
-          pylint kbest_lap -d fixme --ignore-patterns version.py
+          # pylint kbest_lap -d fixme --ignore-patterns version.py
 
       - name: Test with pytest
         run: |
