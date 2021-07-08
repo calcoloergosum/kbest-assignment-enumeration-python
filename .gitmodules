@@ -1,0 +1,3 @@
+[submodule "kbest-assignment-enumeration-rust"]
+	path = kbest-assignment-enumeration-rust
+	url = git@github.com:studentofkyoto/kbest-assignment-enumeration-rust.git

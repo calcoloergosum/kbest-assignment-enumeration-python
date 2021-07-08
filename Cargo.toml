@@ -1,0 +1,22 @@
+[package]
+name = "kbest-lap-python"
+version = "0.1.0"
+authors = ["Jaeseung Han <thestudentofkyoto@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "rust_ext"
+crate-type = ["cdylib"]
+
+[dependencies]
+ndarray = "0.15.3"
+num-complex = "0.4.0"
+numpy = { path = "../rust-numpy" }
+ndarray-linalg = { git = "https://github.com/rust-ndarray/ndarray-linalg", features = ["openblas-static"] }
+
+[dependencies.kbest-lap]
+path = "kbest-assignment-enumeration-rust"
+
+[dependencies.pyo3]
+version = "0.14"
+features = ["extension-module"]
