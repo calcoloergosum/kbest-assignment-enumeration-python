@@ -1,8 +1,9 @@
 """Type aliases for semantic naming"""
 from typing import Callable, Iterator, List, Optional, Tuple, TypeVar
-from .rust_ext import State, Iter, get_costs_reduced
 
 import numpy as np
+
+from .rust_ext import Iter, get_costs_reduced
 
 T = TypeVar("T")
 Matching = List[Tuple[T, T]]
