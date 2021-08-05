@@ -14,8 +14,8 @@ struct State {
     a_solution: Vec<usize>,
 }
 
-impl From<kbest_lap::State<f64>> for State {
-    fn from(inner: kbest_lap::State<f64>) -> Self {
+impl From<kbest_lap::kbest::State<f64>> for State {
+    fn from(inner: kbest_lap::kbest::State<f64>) -> Self {
         State {
             cost_solution: *inner.cost_solution,
             costs_reduced: inner.costs_reduced,
@@ -26,7 +26,7 @@ impl From<kbest_lap::State<f64>> for State {
 
 #[pyclass]
 struct Iter {
-    inner: kbest_lap::KBestEnumeration<f64>,
+    inner: kbest_lap::kbest::KBestMatchingIterator<f64>,
 }
 
 #[pyproto]
@@ -47,7 +47,7 @@ impl Iter {
     fn new(m: PyReadonlyArray2<f64>) -> Iter {
         let arr = m.as_array().to_owned();
         Iter {
-            inner: kbest_lap::KBestEnumeration::<f64>::new(arr).unwrap(),
+            inner: kbest_lap::kbest::KBestMatchingIterator::<f64>::new(arr).unwrap(),
         }
     }
 }
