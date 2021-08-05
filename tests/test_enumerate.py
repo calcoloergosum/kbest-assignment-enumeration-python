@@ -1,3 +1,4 @@
+"""A little bit smarter way to enumerate"""
 import itertools as it
 
 import numpy as np
@@ -8,6 +9,7 @@ import kbest_lap
 
 @pytest.mark.parametrize('size', [5,] * 10)
 def test_linear_sum_assignment(size: int) -> None:
+    """Enumerate everything!"""
     cost_matrix = np.random.random((size, size))
     nodes = [kbest_lap.Node(bool(b), i) for b in (0, 1) for i in range(size)]
     nodes = kbest_lap.NodeSet(nodes, size)

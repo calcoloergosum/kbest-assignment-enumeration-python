@@ -1,7 +1,7 @@
 use all_lap_rust::bipartite as bp;
 use all_lap_rust::contains::Contains;
 use kbest_lap as kl;
-use numpy::{PyReadonlyArray2};
+use numpy::PyReadonlyArray2;
 use pyo3::prelude::*;
 use pyo3::PyIterProtocol;
 use std::ops::DerefMut;
