@@ -3,7 +3,7 @@ from typing import Callable, Iterator, List, Optional, Tuple, TypeVar
 
 import numpy as np
 
-from .rust_ext import Iter, get_costs_reduced
+# from .rust_ext import SortedMatchingIterator
 
 T = TypeVar("T")
 Matching = List[Tuple[T, T]]

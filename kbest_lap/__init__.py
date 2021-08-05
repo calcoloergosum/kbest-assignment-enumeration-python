@@ -1,8 +1,9 @@
 """K-th best matching enumeration"""
-from ._wrapper import CostMatrix, Edge, Matching, enumerate_kbest
-from .rust_ext import Iter, State
+from .rust_ext import Node, NodeSet
+from .rust_ext import SortedMatchingIterator
+from ._wrapper import CostMatrix, Edge, Matching
 
 __all__ = [
     "CostMatrix", "Edge", "Matching", "enumerate_kbest",
-    "Iter", "State"
+    "SortedMatchingIterator", "NodeSet"
 ]

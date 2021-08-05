@@ -1,69 +1,124 @@
-// use numpy::{PyReadonlyArray2};
-use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArray2};
+use all_lap_rust::bipartite as bp;
+use all_lap_rust::contains::Contains;
+use kbest_lap as kl;
+use numpy::{PyReadonlyArray2};
 use pyo3::prelude::*;
 use pyo3::PyIterProtocol;
-
-type Matrix = ndarray::Array2<f64>;
+use std::ops::DerefMut;
 
 #[pyclass]
-struct State {
-    #[pyo3(get)]
-    cost_solution: f64,
-    costs_reduced: Matrix,
-    #[pyo3(get)]
-    a_solution: Vec<usize>,
+#[derive(Clone)]
+struct Node {
+    inner: bp::Node,
 }
 
-impl From<kbest_lap::kbest::State<f64>> for State {
-    fn from(inner: kbest_lap::kbest::State<f64>) -> Self {
-        State {
-            cost_solution: *inner.cost_solution,
-            costs_reduced: inner.costs_reduced,
-            a_solution: inner.a_solution.0,
-        }
+#[pymethods]
+impl Node {
+    #[new]
+    fn __new__(lr: bool, index: usize) -> Self {
+        let nodegroup = match lr {
+            false => bp::NodeGroup::Left,
+            true => bp::NodeGroup::Right,
+        };
+        let inner = bp::Node::new(nodegroup, index);
+        Self { inner }
     }
 }
 
 #[pyclass]
-struct Iter {
-    inner: kbest_lap::kbest::KBestMatchingIterator<f64>,
+#[derive(Clone)]
+struct Matching {
+    inner: kl::Matching,
+}
+
+#[pymethods]
+impl Matching {
+    #[new]
+    fn new(v: Vec<Option<usize>>) -> Self {
+        kl::Matching::new(v).into()
+    }
+    fn as_l2r(&self) -> PyResult<Vec<Option<usize>>> {
+        Ok(self.inner.l2r.clone())
+    }
+
+    fn as_sparse(&self) -> PyResult<Vec<(usize, usize)>> {
+        Ok(self.inner.iter_pairs().collect())
+    }
+}
+
+impl From<kl::Matching> for Matching {
+    fn from(val: kl::Matching) -> Self {
+        Self { inner: val }
+    }
+}
+
+#[pyclass]
+#[derive(Clone)]
+struct NodeSet {
+    inner: bp::NodeSet,
+}
+
+#[pymethods]
+impl NodeSet {
+    #[new]
+    fn __new__(nodes: Vec<Node>, lsize: usize) -> Self {
+        let hashset = nodes.into_iter().map(|x| x.inner).collect();
+        Self {
+            inner: bp::NodeSet::new(hashset, lsize),
+        }
+    }
+}
+
+impl Contains<bp::Node> for NodeSet {
+    fn contains_node(&self, item: &bp::Node) -> bool {
+        self.inner.contains_node(item)
+    }
+}
+
+impl Contains<usize> for NodeSet {
+    fn contains_node(&self, item: &usize) -> bool {
+        self.inner.contains_node(item)
+    }
+}
+
+#[pyclass]
+struct SortedMatchingIterator {
+    inner: kl::SortedMatchingCalculator,
+    allowed_start_nodes: NodeSet,
+}
+
+#[pymethods]
+impl SortedMatchingIterator {
+    #[new]
+    fn new(m: PyReadonlyArray2<f64>, allowed_start_nodes: NodeSet) -> Self {
+        let costs = m.as_array().to_owned();
+        let inner = kl::SortedMatchingCalculator::from_costs(costs);
+        Self {
+            inner,
+            allowed_start_nodes,
+        }
+    }
 }
 
 #[pyproto]
-impl PyIterProtocol for Iter {
+impl PyIterProtocol for SortedMatchingIterator {
     fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
         slf
     }
 
-    fn __next__(mut slf: PyRefMut<Self>) -> Option<State> {
-        let s = slf.inner.next()?;
-        Some(s.into())
-    }
-}
-
-#[pymethods]
-impl Iter {
-    #[new]
-    fn new(m: PyReadonlyArray2<f64>) -> Iter {
-        let arr = m.as_array().to_owned();
-        Iter {
-            inner: kbest_lap::kbest::KBestMatchingIterator::<f64>::new(arr).unwrap(),
-        }
+    fn __next__(mut slf: PyRefMut<Self>) -> Option<Matching> {
+        let _self = slf.deref_mut();
+        let m = _self.inner.next_item(&_self.allowed_start_nodes)?;
+        Some(m.into())
     }
 }
 
 #[pymodule]
 fn rust_ext(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
-    // wrapper of `Iter`
-    m.add_class::<Iter>()?;
-    m.add_class::<State>()?;
-
-    #[pyfn(m)]
-    #[pyo3(name = "get_costs_reduced")]
-    fn costs_reduced<'py>(py: Python<'py>, state: &State) -> &'py PyArrayDyn<f64> {
-        let dynmat = state.costs_reduced.clone().into_dyn();
-        dynmat.into_pyarray(py)
-    }
+    m.add_class::<Matching>()?;
+    m.add_class::<Node>()?;
+    m.add_class::<NodeSet>()?;
+    m.add_class::<SortedMatchingIterator>()?;
 
     Ok(())
 }
