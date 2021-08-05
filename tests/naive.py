@@ -2,9 +2,7 @@
 Naive approach; find by enumeration of perfect matching
 """
 import heapq
-from typing import Callable, Iterator, List, TypeVar
-
-from kbest_lap import Edge, Matching
+from typing import Callable, Iterator, List, Tuple, TypeVar
 
 try:
     import networkx as nx
@@ -12,16 +10,20 @@ try:
 except ImportError:
     print("Networkx not found. Regression test is not available")
 
-
 T = TypeVar("T")
-def enumerate_naive(edges: List[Edge[T]]) -> Iterator[Matching[T]]:
+
+Matching = List[Tuple[T, T]]
+
+MAX_HEAPSIZE = 100
+
+def enumerate_naive(edges: List[Tuple[T, T, float]]) -> Iterator[Matching
+]:
     """Enumerate best matchings"""
-    MAX_HEAPSIZE = 100
     graph = nx.Graph()
-    for n1, n2, w in edges:
-        graph.add_node(n1)
-        graph.add_node(n2)
-        graph.add_edge(n1, n2, weight=w)
+    for node1, node2, weight in edges:
+        graph.add_node(node1)
+        graph.add_node(node2)
+        graph.add_edge(node1, node2, weight=weight)
 
     if not bprt.is_bipartite(graph):
         raise RuntimeError("Not bipartite")
@@ -30,16 +32,16 @@ def enumerate_naive(edges: List[Edge[T]]) -> Iterator[Matching[T]]:
     lefts = sorted(left_set)
     rights = sorted(right_set)
     heap = []
-    for m in _naive(lefts, rights, is_valid=lambda x, y: (x, y) in graph.edges):
-        score = sum(graph.edges[(n1, n2)]['weight'] for n1, n2 in m)
+    for matching in _naive(lefts, rights, is_valid=lambda x, y: (x, y) in graph.edges):
+        score = sum(graph.edges[(n1, n2)]['weight'] for n1, n2 in matching)
         if len(heap) <= MAX_HEAPSIZE:
-            heapq.heappush(heap, (score, m))
+            heapq.heappush(heap, (score, matching))
         else:
-            heapq.heappushpop(heap, (score, m))
+            heapq.heappushpop(heap, (score, matching))
 
     while heap != []:
-        score, m = heapq.heappop(heap)
-        yield m
+        score, matching = heapq.heappop(heap)
+        yield matching
 
 
 def _naive(lefts: List[T], rights: List[T], is_valid: Callable[[T, T], bool]) -> Iterator[Matching[T]]:
@@ -59,5 +61,5 @@ def _naive(lefts: List[T], rights: List[T], is_valid: Callable[[T, T], bool]) ->
         if not is_valid(*pair):
             continue
 
-        for m in _naive(tail, rights[:i] + rights[i + 1:], is_valid=is_valid):
-            yield [pair] + m
+        for matching in _naive(tail, rights[:i] + rights[i + 1:], is_valid=is_valid):
+            yield [pair] + matching

@@ -15,7 +15,12 @@ numpy = { git = "https://github.com/PyO3/rust-numpy", branch = "main" }
 ndarray-linalg = { git = "https://github.com/rust-ndarray/ndarray-linalg", features = ["openblas-static"] }
 
 [dependencies.kbest-lap]
-path = "kbest-assignment-enumeration-rust"
+git = "https://github.com/studentofkyoto/kbest-assignment-enumeration-rust"
+tag = "v0.1.1"
+
+[dependencies.all-lap-rust]
+git = "https://github.com/studentofkyoto/all-lap-rust"
+tag = "v0.1.1"
 
 [dependencies.pyo3]
 version = "0.14.0"
